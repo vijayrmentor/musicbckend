@@ -2,11 +2,11 @@ const { User } = require('../models');
 
 // Register a new user
 exports.register = async (req, res) => {
-    const { username, password } = req.body;
+    const { username, password , contactNumber,brandPerformance,category,location,sponsor} = req.body;
 
     try {
         // Create a new user
-        const user = await User.create({ username, password });
+        const user = await User.create({ username, password,contactNumber,brandPerformance,category,location,sponsor });
         res.status(201).json({ message: 'User registered successfully', user });
     } catch (error) {
         res.status(500).json({ message: 'Error registering user', error });
@@ -16,7 +16,7 @@ exports.register = async (req, res) => {
 // Update a user
 exports.updateUser = async (req, res) => {
     const { id } = req.params;
-    const { username, password } = req.body;
+    const { username, password,contactNumber,brandPerformance,category,location,sponsor } = req.body;
 
     try {
         const user = await User.findByPk(id);
@@ -27,6 +27,11 @@ exports.updateUser = async (req, res) => {
 
         user.username = username || user.username;
         user.password = password || user.password;
+        user.contactNumber=contactNumber|| user.contactNumber;
+        user.brandPerformance=brandPerformance|| user.brandPerformance;
+        user.category=category|| user.category;
+        user.location=location|| user.location;
+        user.sponsor=sponsor|| user.sponsor;
 
         await user.save();
 
