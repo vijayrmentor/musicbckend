@@ -18,6 +18,10 @@ app.use('/api/artists', artistRoutes);
 //app.use('/uploads', express.static('uploads'));
 //app.use('/api/events', eventRoutes);
 
+app.use('/uploads', express.static('uploads'));
+app.use('/api/events', eventRoutes);
+
+
 sequelize.authenticate()
     .then(() => console.log('Connected to database'))
     .catch(err => console.error('Unable to connect to database:', err));

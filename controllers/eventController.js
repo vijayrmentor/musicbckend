@@ -1,22 +1,17 @@
-const { Event, Artist } = require('../models');
+const { Event } = require('../models');
 
 // Create an event
 exports.createEvent = async (req, res) => {
-    const { artistId, eventName, eventDate, eventUrl } = req.body;
-    const eventImage = req.file ? req.file.path : null;
+    const { username, eventName, eventDate, eventUrl } = req.body;
+    const imagePath = req.file ? req.file.path : null;
 
     try {
-        const artist = await Artist.findByPk(artistId);
-        if (!artist) {
-            return res.status(404).json({ message: 'Artist not found' });
-        }
-
         const event = await Event.create({
-            artistId,
+            username,
             eventName,
             eventDate,
             eventUrl,
-            eventImage,
+            imagePath,
         });
 
         res.status(201).json({ message: 'Event created successfully', event });
@@ -25,23 +20,32 @@ exports.createEvent = async (req, res) => {
     }
 };
 
+// Get all events
+exports.getAllEvents = async (req, res) => {
+    try {
+        const events = await Event.findAll();
+        res.status(200).json(events);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching events', error });
+    }
+};
+
 // Update an event
 exports.updateEvent = async (req, res) => {
     const { eventId } = req.params;
-    const { eventName, eventDate, eventUrl } = req.body;
-    const eventImage = req.file ? req.file.path : null;
+    const { username, eventName, eventDate, eventUrl } = req.body;
+    const imagePath = req.file ? req.file.path : null;
 
     try {
         const event = await Event.findByPk(eventId);
-        if (!event) {
-            return res.status(404).json({ message: 'Event not found' });
-        }
+        if (!event) return res.status(404).json({ message: 'Event not found' });
 
         await event.update({
+            username,
             eventName,
             eventDate,
             eventUrl,
-            eventImage: eventImage || event.eventImage, // Keep existing image if not updated
+            imagePath: imagePath || event.imagePath,
         });
 
         res.status(200).json({ message: 'Event updated successfully', event });
@@ -56,9 +60,7 @@ exports.deleteEvent = async (req, res) => {
 
     try {
         const event = await Event.findByPk(eventId);
-        if (!event) {
-            return res.status(404).json({ message: 'Event not found' });
-        }
+        if (!event) return res.status(404).json({ message: 'Event not found' });
 
         await event.destroy();
         res.status(200).json({ message: 'Event deleted successfully' });
@@ -67,34 +69,33 @@ exports.deleteEvent = async (req, res) => {
     }
 };
 
-// Get all events
-exports.getAllEvents = async (req, res) => {
-    try {
-        const events = await Event.findAll({
-            include: Artist, // Include associated artist details
-        });
-
-        res.status(200).json(events);
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching events', error });
-    }
-};
-
-// Get event by ID
-exports.getAllEventsById = async (req, res) => {
+// Get an event by ID
+exports.getEventById = async (req, res) => {
     const { eventId } = req.params;
 
     try {
-        const event = await Event.findByPk(eventId, {
-            include: Artist, // Include associated artist details
-        });
-
-        if (!event) {
-            return res.status(404).json({ message: 'Event not found' });
-        }
+        const event = await Event.findByPk(eventId);
+        if (!event) return res.status(404).json({ message: 'Event not found' });
 
         res.status(200).json(event);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching event', error });
+    }
+};
+
+// Fetch an event by all
+exports.fetchEvents = async () => {
+    try {
+        const response = await axios.get('http://localhost:3000/api/fetchall/all', {
+            params: {
+                searchQuery,
+                startDate: startDate ? startDate.toISOString().split('T')[0] : null,
+                endDate: endDate ? endDate.toISOString().split('T')[0] : null,
+            },
+        });
+        setEvents(response.data);
+        setFilteredEvents(response.data);
+    } catch (error) {
+        console.error('Error fetching events:', error);
     }
 };
